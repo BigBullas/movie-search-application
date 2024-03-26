@@ -246,7 +246,7 @@ const CustomMenu: React.FC = () => {
         mode="inline"
         items={navbar}
       />
-      <div style={styles.test001}>ADJDFKSLD</div>
+      {/* <div className={styles.test001}>ADJDFKSLD</div> */}
     </>
   );
 };

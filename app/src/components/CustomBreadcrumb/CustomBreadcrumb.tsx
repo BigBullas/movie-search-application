@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from './CustomBreadcrumb.module.scss';
 import { HomeOutlined, UserOutlined } from '@ant-design/icons';
 import { Breadcrumb } from 'antd';
+import styles from './CustomBreadcrumb.module.scss';
 
 console.log(styles);
 

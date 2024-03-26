@@ -1,0 +1,64 @@
+.headerStyle {
+  height: 64;
+  padding-inline: 48;
+  line-height: 64px;
+
+  display: flex;
+  align-items: center;
+  text-align: center;
+
+  color: hsla(0, 0%, 100%, 0.651);
+  background-color: #001529;
+
+  padding: 0;
+
+  .headerLeft {
+    display: flex;
+    justify-content: space-around;
+    min-width: 260px;
+
+    .burgerAndLogo {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+  }
+
+  .headerRight {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    .documentTitle {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding-left: 4.7em;
+    }
+
+    .documentInstruments {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding-right: 5em;
+
+      .iconContainer {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .buttonContainer {
+        display: flex;
+        justify-content: left;
+        gap: 10px;
+        align-items: center;
+      }
+    }
+  }
+}
+
+.logo {
+  font-size: large;
+  font-weight: 700;
+}
