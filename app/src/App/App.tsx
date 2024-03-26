@@ -14,8 +14,8 @@ import EditorPage from '../pages/EditorPage';
 
 const App: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isUpdateNoteAndDirList, setIsUpdateNoteAndDirList] =
-    React.useState(false);
+  // const [isUpdateNoteAndDirList, setIsUpdateNoteAndDirList] =
+  const [isUpdateNoteAndDirList] = React.useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // const [noteList, setNotelist] = React.useState<NotePreview[]>([]);
   const [currentNote, setCurrentNote] = React.useState<Note>({});
@@ -70,6 +70,7 @@ const App: React.FC = () => {
                       <CustomHeader
                         currentNote={currentNote}
                         messageApi={messageApi}
+                        setCurrentNote={setCurrentNote}
                       ></CustomHeader>
                     }
                   />

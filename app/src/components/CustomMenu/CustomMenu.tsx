@@ -135,7 +135,8 @@ const CustomMenu: React.FC<Props> = ({
   currentNote,
   setCurrentNote,
 }) => {
-  const [theme, setTheme] = useState<MenuTheme>('light');
+  // const [theme, setTheme] = useState<MenuTheme>('light');
+  const [theme] = useState<MenuTheme>('light');
   const navigate = useNavigate();
   const [currentNoteId, setCurrentNoteId] = useState(
     String(currentNote.noteId),
@@ -237,9 +238,9 @@ const CustomMenu: React.FC<Props> = ({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const changeTheme = (value: boolean) => {
-    setTheme(value ? 'dark' : 'light');
-  };
+  // const changeTheme = (value: boolean) => {
+  //   setTheme(value ? 'dark' : 'light');
+  // };
 
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
