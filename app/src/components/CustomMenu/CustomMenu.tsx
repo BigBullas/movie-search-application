@@ -3,9 +3,10 @@ import { FileTextOutlined, FolderOutlined } from '@ant-design/icons';
 import type { MenuProps, MenuTheme } from 'antd';
 import { Menu } from 'antd';
 import { api } from '../../api';
-import { NotePreview, Dir } from '../../api/Api';
+import { NotePreview, Dir, Note } from '../../api/Api';
 
 import styles from './CustomMenu.module.scss';
+import { useNavigate } from 'react-router-dom';
 console.log(styles);
 
 const createMenuStructure = (
@@ -123,13 +124,32 @@ function getItem(
   } as MenuItem;
 }
 
-const CustomMenu: React.FC = () => {
+type Props = {
+  isUpdate: boolean;
+  currentNote: Note;
+  setCurrentNote: React.Dispatch<React.SetStateAction<Note>>;
+};
+
+const CustomMenu: React.FC<Props> = ({
+  isUpdate,
+  currentNote,
+  setCurrentNote,
+}) => {
   const [theme, setTheme] = useState<MenuTheme>('light');
-  const [current, setCurrent] = useState('1');
+  const navigate = useNavigate();
+  const [currentNoteId, setCurrentNoteId] = useState(
+    String(currentNote.noteId),
+  );
+  const [currentDirId, setCurrentDirId] = useState(`d${currentNote.parentDir}`);
 
   const [noteList, setNoteList] = useState<NotePreview[]>([]);
   const [dirList, setDirList] = useState<Dir[]>([]);
   const [navbar, setNavbar] = useState<MenuItem[]>();
+
+  useEffect(() => {
+    setCurrentNoteId(String(currentNote.noteId));
+    setCurrentDirId(`d${currentNote.parentDir}`);
+  }, [currentNote]);
 
   const createNavbar = () => {
     setNavbar([]);
@@ -159,18 +179,17 @@ const CustomMenu: React.FC = () => {
         });
       }
     });
-    console.log('0.3', navbar);
   };
 
   const createStructure = async () => {
     await requestForNotesOverview();
     await requestForDirOverview();
-    createNavbar();
+    // createNavbar();
   };
 
   useEffect(() => {
     createStructure();
-  }, []);
+  }, [isUpdate]);
 
   useEffect(() => {
     console.log('createNavbar: ', noteList, dirList, navbar);
@@ -196,11 +215,10 @@ const CustomMenu: React.FC = () => {
       console.log('response.data.notes: ', response.data.notes);
 
       if (response.data.notes) {
-        console.log('1');
         setNoteList(response.data.notes);
       }
     } catch (error) {
-      console.log('Error in EditPayloadList: ', error);
+      console.log('Error in requestForNotesOverview: ', error);
     }
   };
 
@@ -211,11 +229,10 @@ const CustomMenu: React.FC = () => {
       console.log('response.data.dirs: ', response.data.dirs);
 
       if (response.data.dirs) {
-        console.log('2');
         setDirList(response.data.dirs);
       }
     } catch (error) {
-      console.log('Error in EditPayloadList: ', error);
+      console.log('Error in requestForDirOverview: ', error);
     }
   };
 
@@ -226,7 +243,14 @@ const CustomMenu: React.FC = () => {
 
   const onClick: MenuProps['onClick'] = (e) => {
     console.log('click ', e);
-    setCurrent(e.key);
+    if (e.key.startsWith('d')) {
+      setCurrentDirId(e.key);
+      navigate(`/dir/${e.key.slice(1)}`);
+    } else {
+      setCurrentNoteId(e.key);
+      setCurrentNote({});
+      navigate(`/note/${e.key}`);
+    }
   };
 
   return (
@@ -241,39 +265,13 @@ const CustomMenu: React.FC = () => {
         theme={theme}
         onClick={onClick}
         style={{ textAlign: 'left' }}
-        // defaultOpenKeys={['sub1']}
-        selectedKeys={[current]}
+        defaultOpenKeys={[currentDirId]}
+        selectedKeys={[currentNoteId]}
         mode="inline"
         items={navbar}
       />
-      {/* <div className={styles.test001}>ADJDFKSLD</div> */}
     </>
   );
 };
 
 export default CustomMenu;
-
-// const items: MenuItem[] = [
-//   getItem('Navigation One', 'dirId', <FolderOpenOutlined />, [
-//     getItem('name 1', 'noteId 1', <FileTextOutlined />),
-//     getItem('Option 2', '2', <FileTextOutlined />),
-//     getItem('Option 3', '3', <FileTextOutlined />),
-//     getItem('Option 4', '4', <FileTextOutlined />),
-//   ]),
-
-//   getItem('Navigation Two', 'sub2', <FolderOutlined />, [
-//     getItem('Option 5', '5', <FileTextOutlined />),
-//     getItem('Option 6', '6', <FileTextOutlined />),
-//     getItem('Submenu', 'sub3', <FolderOutlined />, [
-//       getItem('Option 7', '7', <FileTextOutlined />),
-//       getItem('Option 8', '8', <FileTextOutlined />),
-//     ]),
-//   ]),
-
-//   getItem('Navigation Three', 'sub4', <FolderOutlined />, [
-//     getItem('Option 9', '9'),
-//     getItem('Option 10', '10'),
-//     getItem('Option 11', '11'),
-//     getItem('Option 12', '12'),
-//   ]),
-// ];

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout, Button, Input } from 'antd';
 // import { api } from './../api';
 
@@ -12,18 +12,65 @@ import {
   MenuUnfoldOutlined,
   PlusCircleOutlined,
 } from '@ant-design/icons';
+import { Note } from '../../api/Api';
+import { api } from '../../api';
+import { MessageInstance } from 'antd/es/message/interface';
 
 console.log(styles);
 
 type Props = {
-  handleCreateNote: (event: React.MouseEvent) => void;
-  handleUpdateNote: (event: React.MouseEvent) => void;
+  // isUpdateNoteAndDirList: boolean;
+  // setIsUpdateNoteAndDirList: React.Dispatch<React.SetStateAction<boolean>>;
+  currentNote: Note;
+  setCurrentNote: React.Dispatch<React.SetStateAction<Note>>;
+  messageApi: MessageInstance;
 };
 
 const CustomHeader: React.FC<Props> = ({
-  handleCreateNote,
-  handleUpdateNote,
+  currentNote,
+  setCurrentNote,
+  messageApi,
 }) => {
+  const [currentNoteTitle, setCurrentNoteTitle] = useState(currentNote.name);
+
+  useEffect(() => {
+    setCurrentNoteTitle(currentNote.name);
+  }, [currentNote]);
+
+  const requestUpdateNote = async () => {
+    try {
+      if (currentNote.noteId) {
+        const response = await api.notes.notesUpdate(
+          currentNote.noteId,
+          currentNote,
+        );
+        console.log(response.status);
+        //TODO: проверить работу contextHolder
+        messageApi.open({
+          type: 'success',
+          content: 'Конспект успешно обновлён',
+        });
+      }
+    } catch (error) {
+      console.log('Error in handleUpdateNote: ', error);
+    }
+  };
+
+  const handleUpdateNote = (event: React.MouseEvent) => {
+    event.preventDefault();
+    requestUpdateNote();
+  };
+
+  const handleUpdateTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const changedTitle = event.target.value;
+    // setCurrentNoteTitle(changedTitle);
+    setCurrentNote((oldNote) => {
+      oldNote.name = changedTitle;
+      return oldNote;
+    });
+    requestUpdateNote();
+  };
+
   return (
     <Header className={styles.headerStyle}>
       <div className={styles.headerLeft}>
@@ -40,7 +87,11 @@ const CustomHeader: React.FC<Props> = ({
       <div className={styles.headerRight}>
         <div className={styles.documentTitle}>
           <div>
-            <Input placeholder="Новый документ" />
+            <Input
+              value={currentNoteTitle}
+              placeholder="Новый документ"
+              onChange={handleUpdateTitle}
+            />
           </div>
           <div>
             <EditOutlined style={{ fontSize: '20px' }} />
@@ -59,8 +110,8 @@ const CustomHeader: React.FC<Props> = ({
             </div>
           </div>
           <div className={styles.buttonContainer}>
-            <Button type="default" onClick={handleCreateNote}>
-              Создать
+            <Button type="default" onClick={() => {}}>
+              Поделиться
             </Button>
             <Button type="primary" onClick={handleUpdateNote}>
               Сохранить

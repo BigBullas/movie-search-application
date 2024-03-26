@@ -1,218 +1,177 @@
 // import classes from "./App.module.scss";
-import React, { useEffect } from 'react';
-import MDEditor from '@uiw/react-md-editor';
-import { Layout, Flex } from 'antd';
-import { api } from './../api';
+import React from 'react';
+import { Route, Routes } from 'react-router-dom';
+import { Layout, Flex, message } from 'antd';
+// import { api } from './../api';
 
 const { Sider, Content } = Layout;
-import { getCodeString } from 'rehype-rewrite';
-import katex from 'katex';
-import 'katex/dist/katex.css';
+
 import CustomMenu from '../components/CustomMenu';
 import Search from 'antd/es/input/Search';
-import CustomBreadcrumb from '../components/CustomBreadcrumb';
 import CustomHeader from '../components/CustomHeader';
-
-const mdKaTeX = `This is to display the
-\`\$\$\c = \\pm\\sqrt{a^2 + b^2}\$\$\`
- in one line
-
-\`\`\`KaTeX
-c = \\pm\\sqrt{a^2 + b^2}
-\`\`\`
-`;
-
-type Note = {
-  noteId?: number;
-  name?: string;
-  parentDir?: number;
-};
+import { Note } from '../api/Api';
+import EditorPage from '../pages/EditorPage';
 
 const App: React.FC = () => {
-  const [value, setValue] = React.useState(mdKaTeX);
-  const [notes, setNotes] = React.useState<Note[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isUpdateNoteAndDirList, setIsUpdateNoteAndDirList] =
+    React.useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  // const [noteList, setNotelist] = React.useState<NotePreview[]>([]);
+  const [currentNote, setCurrentNote] = React.useState<Note>({});
 
-  useEffect(() => {
-    requestForOverview();
-    requestOntNote();
-  }, []);
+  // СТРАНИЦА СОЗДАНИЯ ЗАМЕТКИ
 
-  useEffect(() => {
-    // Этот код будет выполнен каждый раз, когда notes обновляется
-    console.log(notes);
-  }, [notes]); // Зависимость от notes
+  // const requestNote = async (id: number) => {
+  //   try {
+  //     const response = await api.notes.notesDetail(id);
 
-  const requestOntNote = async () => {
-    try {
-      const response = await api.notes.notesDetail(1);
-      console.log(response.data);
-      if (response.data.body) {
-        setValue(response.data.body);
-      }
-      console.log(notes);
-    } catch (error) {
-      console.log('Error in EditPayloadList: ', error);
-    }
-  };
+  //     console.log(response.data);
 
-  const handleChangeText = (
-    value: React.SetStateAction<string | undefined>,
-  ) => {
-    console.log('handleChangeText_value: ', value);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    setValue(value);
-  };
+  //     setCurrentNote(response.data);
+  //     // TODO: добавить link на страницу редактирования пустой заметки
+  //   } catch (error) {
+  //     console.log('Error in requestNote: ', error);
+  //   }
+  // };
 
-  const requestForOverview = async () => {
-    try {
-      const response = await api.notes.overviewList();
+  // const handleCreateNote = async (event: React.MouseEvent) => {
+  //   event.preventDefault();
+  //   const note: Note = {
+  //     userId: 1,
+  //     parentDir: 0,
+  //   };
 
-      console.log(response.data.notes);
+  //   try {
+  //     const response = await api.notes.notesCreate(note);
 
-      if (response.data.notes) {
-        console.log('1');
-        setNotes(response.data.notes);
-      }
-      console.log(notes);
-    } catch (error) {
-      console.log('Error in EditPayloadList: ', error);
-    }
-  };
+  //     console.log(response.data.noteId);
 
-  const requestNote = async (id = 1) => {
-    try {
-      const response = await api.notes.notesDetail(id);
-      console.log(response.data);
-    } catch (error) {
-      console.log('Error in EditPayloadList: ', error);
-    }
-  };
-
-  const handleCreateNote = async (event: React.MouseEvent) => {
-    event.preventDefault();
-    const note = {
-      userId: 1,
-      name: 'example',
-      body: 'nasjkdhfjkhasdfjkasdf',
-      parentDir: 0,
-    };
-
-    try {
-      const response = await api.notes.notesCreate(note);
-      console.log(response.data.noteId);
-      requestNote(response.data.noteId);
-    } catch (error) {
-      console.log('Error in EditPayloadList: ', error);
-    }
-  };
-
-  const handleUpdateNote = async (event: React.MouseEvent) => {
-    event.preventDefault();
-    const note = {
-      userId: 1,
-      name: 'example2',
-      body: value,
-      parentDir: 0,
-    };
-
-    try {
-      const response = await api.notes.notesUpdate(1, note);
-      console.log(response.status);
-    } catch (error) {
-      console.log('Error in EditPayloadList: ', error);
-    }
-  };
+  //     requestNote(response.data.noteId);
+  //     setIsUpdateNoteAndDirList(!isUpdateNoteAndDirList);
+  //   } catch (error) {
+  //     console.log('Error in handleCreateNote: ', error);
+  //   }
+  // };
 
   return (
-    <Flex gap="middle" wrap="wrap" style={{ height: '100%' }}>
-      <Layout style={layoutStyle}>
-        <CustomHeader
-          handleCreateNote={handleCreateNote}
-          handleUpdateNote={handleUpdateNote}
-        ></CustomHeader>
-        <Layout>
-          <Sider style={siderStyle} width={'260px'}>
-            <Search
-              placeholder="Поиск"
-              allowClear
-              onSearch={() => {}}
-              style={{ width: '80%', margin: '1em 0' }}
-            />
-            <CustomMenu></CustomMenu>
-          </Sider>
-          <Content style={contentStyle}>
-            <div style={{ paddingBottom: '2em' }}>
-              <CustomBreadcrumb></CustomBreadcrumb>
-            </div>
-
-            <div style={editor} data-color-mode="light">
-              <MDEditor
-                value={value}
-                height={800}
-                onChange={handleChangeText}
-                previewOptions={{
-                  components: {
-                    code: ({ children = [], className, ...props }) => {
-                      if (
-                        typeof children === 'string' &&
-                        /^\$\$(.*)\$\$/.test(children)
-                      ) {
-                        const html = katex.renderToString(
-                          children.replace(/^\$\$(.*)\$\$/, '$1'),
-                          {
-                            throwOnError: false,
-                          },
-                        );
-                        return (
-                          <code
-                            dangerouslySetInnerHTML={{ __html: html }}
-                            style={{ background: 'transparent' }}
-                          />
-                        );
-                      }
-                      const code =
-                        // eslint-disable-next-line react/prop-types
-                        props.node && props.node.children
-                          ? // eslint-disable-next-line react/prop-types
-                            getCodeString(props.node.children)
-                          : children;
-                      if (
-                        typeof code === 'string' &&
-                        typeof className === 'string' &&
-                        /^language-katex/.test(className.toLocaleLowerCase())
-                      ) {
-                        const html = katex.renderToString(code, {
-                          throwOnError: false,
-                        });
-                        return (
-                          <code
-                            style={{ fontSize: '150%' }}
-                            dangerouslySetInnerHTML={{ __html: html }}
-                          />
-                        );
-                      }
-                      return (
-                        <code className={String(className)}>{children}</code>
-                      );
-                    },
-                  },
-                }}
-              />
-            </div>
-          </Content>
-        </Layout>
-      </Layout>
-    </Flex>
+    <>
+      <Routes>
+        <Route path="/home" element={<h1>Страница описания</h1>} />
+        <Route
+          path="/*"
+          element={
+            <Flex gap="middle" wrap="wrap" style={{ height: '100%' }}>
+              <Layout style={layoutStyle}>
+                <Routes>
+                  <Route
+                    path="/note/:id"
+                    element={
+                      <CustomHeader
+                        currentNote={currentNote}
+                        messageApi={messageApi}
+                      ></CustomHeader>
+                    }
+                  />
+                  <Route
+                    path="/*"
+                    element={<h1>Хедер для страниц списка папок</h1>}
+                  />
+                </Routes>
+                <Layout>
+                  <Sider style={siderStyle} width={'260px'}>
+                    <Search
+                      placeholder="Поиск"
+                      allowClear
+                      onSearch={() => {}}
+                      style={{ width: '80%', margin: '1em 0' }}
+                    />
+                    <CustomMenu
+                      currentNote={currentNote}
+                      setCurrentNote={setCurrentNote}
+                      isUpdate={isUpdateNoteAndDirList}
+                    ></CustomMenu>
+                  </Sider>
+                  <Content style={contentStyle}>
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={<h1>Страница списка папок и файлов</h1>}
+                      />
+                      <Route
+                        path="/note/:id"
+                        element={
+                          <EditorPage
+                            note={currentNote}
+                            setNote={setCurrentNote}
+                            contextHolder={contextHolder}
+                          ></EditorPage>
+                        }
+                      />
+                      <Route
+                        path="/dir/:id"
+                        element={
+                          <h1>
+                            Страница списка папок и файлов определённой папки
+                          </h1>
+                        }
+                      />
+                    </Routes>
+                  </Content>
+                </Layout>
+              </Layout>
+            </Flex>
+          }
+        />
+      </Routes>
+    </>
   );
 };
 
 export default App;
 
-const editor: React.CSSProperties = {
-  height: '800px !import',
-  padding: '0 10',
-};
+{
+  /* <Routes>
+<Route path="/home" element={<HomePage />} />
+<Route path="/*" element={
+  <Layout style={layoutStyle}>
+    <CustomHeader />
+    <Layout>
+      <Sider style={siderStyle} width={'260px'}>
+        <Search placeholder="Поиск" allowClear onSearch={() => {}} style={{ width: '80%', margin: '1em 0' }} />
+        <CustomMenu />
+      </Sider>
+      <Content style={contentStyle}>
+        <Routes>
+         <Route path="/" element={<h1>Страница списка папок и файлов</h1>} />
+         <Route path="/note/:id" element={<EditorPage />} />
+        </Routes>
+      </Content>
+    </Layout>
+  </Layout>
+} />
+</Routes> */
+}
+
+/*    <BrowserRouter>
+      <Header />
+      <ContainerUnderHeader desc={ desc } path={ path } draftID={ draftID }/>
+
+      <Routes>
+        <Route path="/" element={<PayloadsPage changeBreadcrump = {changeBreadcrump} payloads={ payloads }
+         loading = { loading } getPayloadList={ getPayloadList } draftID = { draftID } setDraftID = { setDraftID }/>} />
+        <Route path="/edit_payloads/" element = {<EditPayloadListPage changeBreadcrump={changeBreadcrump}/> } />
+        <Route path="/edit_payload/:id" element = {<SinglePayloadPage changeBreadcrump = {changeBreadcrump} isEdit = {true}/>} />
+        <Route path="/payload/:id" element = {<SinglePayloadPage changeBreadcrump = {changeBreadcrump} isEdit = {false}/>} />
+
+        <Route path="/rocket_flights" element = { <FlightsPage changeBreadcrump={changeBreadcrump}/> }/>
+        <Route path="/rocket_flight/:id" element = { <SingleFlightPage changeBreadcrump={changeBreadcrump} draftId={draftID} setDraftId={ setDraftID }/> }/>
+
+        <Route path="/auth" element = { <AuthPage changeBreadcrump = {changeBreadcrump}/> }/>
+        <Route path="/reg" element = { <RegPage  changeBreadcrump = {changeBreadcrump}/> }/>
+        <Route path="/profile" element = { <ProfilePage changeBreadcrump={changeBreadcrump} draftID = { draftID } setDraftID = { setDraftID } />}/>
+      </Routes>
+    </BrowserRouter> */
 
 const contentStyle: React.CSSProperties = {
   textAlign: 'center',
