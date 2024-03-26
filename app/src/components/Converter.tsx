@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 function Converter() {
   const [value, setValue] = useState<number>();
@@ -8,7 +8,7 @@ function Converter() {
   const updateValue =
     (baseName: string, base: number) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.value === "") {
+      if (e.target.value === '') {
         setValue(() => undefined);
         setOrigin(() => undefined);
       } else {
@@ -26,30 +26,30 @@ function Converter() {
         Decimal:
         <input
           type="string"
-          value={value?.toString(10) || ""}
+          value={value?.toString(10) || ''}
           name="decimal"
-          onChange={updateValue("decimal", 10)}
-          disabled={isDisabled("decimal")}
+          onChange={updateValue('decimal', 10)}
+          disabled={isDisabled('decimal')}
         />
       </label>
       <label>
         Hexadecimal:
         <input
           type="string"
-          value={value?.toString(16) || ""}
+          value={value?.toString(16) || ''}
           name="hex"
-          onChange={updateValue("hex", 16)}
-          disabled={isDisabled("hex")}
+          onChange={updateValue('hex', 16)}
+          disabled={isDisabled('hex')}
         />
       </label>
       <label>
         Binary:
         <input
           type="string"
-          value={value?.toString(2) || ""}
+          value={value?.toString(2) || ''}
           name="binary"
-          onChange={updateValue("binary", 2)}
-          disabled={isDisabled("binary")}
+          onChange={updateValue('binary', 2)}
+          disabled={isDisabled('binary')}
         />
       </label>
     </div>
