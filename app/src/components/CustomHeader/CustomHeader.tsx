@@ -15,22 +15,28 @@ import {
 import { Note } from '../../api/Api';
 import { api } from '../../api';
 import { MessageInstance } from 'antd/es/message/interface';
+import { useNavigate } from 'react-router-dom';
 
 console.log(styles);
 
 type Props = {
-  // isUpdateNoteAndDirList: boolean;
-  // setIsUpdateNoteAndDirList: React.Dispatch<React.SetStateAction<boolean>>;
+  isFullHeader: boolean;
+  isUpdateNoteAndDirList: boolean;
+  setIsUpdateNoteAndDirList: React.Dispatch<React.SetStateAction<boolean>>;
   currentNote: Note;
   setCurrentNote: React.Dispatch<React.SetStateAction<Note>>;
   messageApi: MessageInstance;
 };
 
 const CustomHeader: React.FC<Props> = ({
+  isFullHeader,
+  isUpdateNoteAndDirList,
+  setIsUpdateNoteAndDirList,
   currentNote,
   setCurrentNote,
   messageApi,
 }) => {
+  const navigate = useNavigate();
   const [currentNoteTitle, setCurrentNoteTitle] = useState(currentNote.name);
 
   useEffect(() => {
@@ -45,7 +51,6 @@ const CustomHeader: React.FC<Props> = ({
           currentNote,
         );
         console.log(response.status);
-        //TODO: проверить работу contextHolder
         messageApi.open({
           type: 'success',
           content: 'Конспект успешно обновлён',
@@ -56,6 +61,23 @@ const CustomHeader: React.FC<Props> = ({
     }
   };
 
+  const requestDeleteNote = async () => {
+    try {
+      if (currentNote.noteId) {
+        const response = await api.notes.notesDelete(currentNote.noteId);
+
+        console.log(response.status);
+        // TODO: messageHolder утащить в другое место
+        // messageApi.open({
+        //   type: 'success',
+        //   content: 'Конспект успешно удалён',
+        // });
+      }
+    } catch (error) {
+      console.log('Error in requestDeleteNote: ', error);
+    }
+  };
+
   const handleUpdateNote = (event: React.MouseEvent) => {
     event.preventDefault();
     requestUpdateNote();
@@ -63,12 +85,40 @@ const CustomHeader: React.FC<Props> = ({
 
   const handleUpdateTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
     const changedTitle = event.target.value;
-    // setCurrentNoteTitle(changedTitle);
+    setCurrentNoteTitle(changedTitle);
     setCurrentNote((oldNote) => {
       oldNote.name = changedTitle;
       return oldNote;
     });
-    requestUpdateNote();
+  };
+
+  const handleClickUpdateTitle = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    await requestUpdateNote();
+    setIsUpdateNoteAndDirList(!isUpdateNoteAndDirList);
+  };
+
+  const handleClickCreateNewNote = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setCurrentNote({});
+    setCurrentNoteTitle(undefined);
+    navigate('/note/0');
+  };
+
+  const handleClickMainPage = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setCurrentNote({});
+    setCurrentNoteTitle(undefined);
+    navigate('/');
+  };
+
+  const handleClickDeleteNote = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    setCurrentNote({});
+    setCurrentNoteTitle(undefined);
+    setIsUpdateNoteAndDirList(!isUpdateNoteAndDirList);
+    await requestDeleteNote();
+    navigate('/');
   };
 
   return (
@@ -78,47 +128,60 @@ const CustomHeader: React.FC<Props> = ({
           <div>
             <MenuUnfoldOutlined style={{ fontSize: '20px' }} />
           </div>
-          <div className={styles.logo}>EasyTeX</div>
+          <div className={styles.logo} onClick={handleClickMainPage}>
+            EasyTeX
+          </div>
         </div>
         <div>
-          <PlusCircleOutlined style={{ fontSize: '20px' }} />
+          <PlusCircleOutlined
+            style={{ fontSize: '20px' }}
+            onClick={handleClickCreateNewNote}
+          />
         </div>
       </div>
-      <div className={styles.headerRight}>
-        <div className={styles.documentTitle}>
-          <div>
-            <Input
-              value={currentNoteTitle}
-              placeholder="Новый документ"
-              onChange={handleUpdateTitle}
-            />
+      {isFullHeader && (
+        <div className={styles.headerRight}>
+          <div className={styles.documentTitle}>
+            <div>
+              <Input
+                value={currentNoteTitle}
+                placeholder="Новый документ"
+                onChange={handleUpdateTitle}
+              />
+            </div>
+            <div>
+              <EditOutlined
+                style={{ fontSize: '20px' }}
+                onClick={handleClickUpdateTitle}
+              />
+            </div>
           </div>
-          <div>
-            <EditOutlined style={{ fontSize: '20px' }} />
+          <div className={styles.documentInstruments}>
+            <div className={styles.iconContainer}>
+              <div>
+                <FileImageOutlined style={{ fontSize: '20px' }} />
+              </div>
+              <div>
+                <DeleteOutlined
+                  style={{ fontSize: '20px' }}
+                  onClick={handleClickDeleteNote}
+                />
+              </div>
+              <div>
+                <ExportOutlined style={{ fontSize: '20px' }} />
+              </div>
+            </div>
+            <div className={styles.buttonContainer}>
+              <Button type="default" onClick={() => {}}>
+                Поделиться
+              </Button>
+              <Button type="primary" onClick={handleUpdateNote}>
+                Сохранить
+              </Button>
+            </div>
           </div>
         </div>
-        <div className={styles.documentInstruments}>
-          <div className={styles.iconContainer}>
-            <div>
-              <FileImageOutlined style={{ fontSize: '20px' }} />
-            </div>
-            <div>
-              <DeleteOutlined style={{ fontSize: '20px' }} />
-            </div>
-            <div>
-              <ExportOutlined style={{ fontSize: '20px' }} />
-            </div>
-          </div>
-          <div className={styles.buttonContainer}>
-            <Button type="default" onClick={() => {}}>
-              Поделиться
-            </Button>
-            <Button type="primary" onClick={handleUpdateNote}>
-              Сохранить
-            </Button>
-          </div>
-        </div>
-      </div>
+      )}
     </Header>
   );
 };

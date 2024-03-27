@@ -30,3 +30,13 @@
 .editor {
   height: 800px;
 }
+
+h2 {
+  text-align: left;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1em;
+}

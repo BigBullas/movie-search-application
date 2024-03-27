@@ -9,7 +9,15 @@ import CustomBreadcrumb from '../../components/CustomBreadcrumb';
 import styles from './EditorPage.module.scss';
 import { Note } from '../../api/Api';
 import { api } from '../../api';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  DownloadOutlined,
+  FileImageOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
+import { Button } from 'antd';
+import { SizeType } from 'antd/es/config-provider/SizeContext';
+import CustomDragger from '../../components/CustomDragger';
 
 console.log(styles);
 
@@ -28,16 +36,34 @@ type Props = {
     unknown,
     string | React.JSXElementConstructor<unknown>
   >;
+  isUpdateNoteAndDirList: boolean;
+  setIsUpdateNoteAndDirList: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const EditorPage: React.FC<Props> = ({ note, setNote, contextHolder }) => {
+const EditorPage: React.FC<Props> = ({
+  note,
+  setNote,
+  contextHolder,
+  isUpdateNoteAndDirList,
+  setIsUpdateNoteAndDirList,
+}) => {
   const { id: strNoteId } = useParams<string>();
   const currentNoteId = Number(strNoteId);
 
+  const navigate = useNavigate();
+  const [size] = useState<SizeType>('large');
+
   const [noteText, setNoteText] = useState<string | undefined>(note.body);
+  const [isActiveDragger, setIsDragger] = useState(false);
+  const [isImageDragger, setIsImageDragger] = useState<boolean | null>(null);
 
   useEffect(() => {
-    requestOnNote();
+    if (currentNoteId !== 0) {
+      requestOnNote();
+    } else {
+      setIsDragger(false);
+      setIsImageDragger(null);
+    }
   }, [currentNoteId]);
 
   useEffect(() => {
@@ -58,19 +84,122 @@ const EditorPage: React.FC<Props> = ({ note, setNote, contextHolder }) => {
   const handleChangeText = (
     value: React.SetStateAction<string | undefined>,
   ) => {
-    console.log('handleChangeText_value: ', value);
+    // console.log('handleChangeText_value: ', value);
     setNoteText(value);
     setNote((note: Note) => {
       note.body = String(value);
       return note;
     });
   };
+
+  const requestNote = async (id: number) => {
+    try {
+      const response = await api.notes.notesDetail(id);
+
+      console.log(response.data);
+
+      setNote(response.data);
+      setIsUpdateNoteAndDirList(!isUpdateNoteAndDirList);
+
+      navigate(`/note/${id}`);
+      // TODO: добавить link на страницу редактирования пустой заметки
+    } catch (error) {
+      console.log('Error in requestNote: ', error);
+    }
+  };
+
+  const handleClickCreateNote = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    let newNote: Note = {};
+    if (note.name) {
+      newNote = {
+        userId: 1,
+        parentDir: 0,
+        name: note.name,
+      };
+    } else {
+      newNote = {
+        userId: 1,
+        parentDir: 0,
+      };
+    }
+
+    try {
+      const response = await api.notes.notesCreate(newNote);
+
+      console.log(response.data.noteId);
+
+      requestNote(response.data.noteId);
+    } catch (error) {
+      console.log('Error in handleCreateNote: ', error);
+    }
+  };
+
+  const handleClickDownloadImages = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setIsDragger(true);
+    setIsImageDragger(true);
+  };
+
+  const handleClickImportFiles = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setIsDragger(true);
+    setIsImageDragger(false);
+  };
+
   return (
     <div className="payload_list_container">
       {contextHolder}
       <div style={{ paddingBottom: '2em' }}>
         <CustomBreadcrumb />
       </div>
+
+      {currentNoteId === 0 && (
+        <>
+          <div>
+            <div>
+              <h2 style={{ marginTop: '0' }}>Создание документа</h2>
+            </div>
+            <div className={styles.buttonContainer}>
+              <Button
+                type="default"
+                icon={<PlusOutlined />}
+                size={size}
+                onClick={handleClickCreateNote}
+              >
+                Пустой документ
+              </Button>
+              <Button
+                type={isImageDragger ? 'primary' : 'default'}
+                icon={<FileImageOutlined />}
+                size={size}
+                onClick={handleClickDownloadImages}
+              >
+                Загрузка фотографий
+              </Button>
+              <Button
+                type={
+                  isImageDragger !== null && !isImageDragger
+                    ? 'primary'
+                    : 'default'
+                }
+                icon={<DownloadOutlined />}
+                size={size}
+                onClick={handleClickImportFiles}
+              >
+                Импорт файлов
+              </Button>
+            </div>
+            <div>
+              <CustomDragger
+                isActive={isActiveDragger}
+                isImage={isImageDragger}
+              ></CustomDragger>
+            </div>
+          </div>
+          <h2>Предварительный вид документа</h2>
+        </>
+      )}
 
       <div className={styles.editor} data-color-mode="light">
         <MDEditor

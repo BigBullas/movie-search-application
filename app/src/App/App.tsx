@@ -15,44 +15,11 @@ import EditorPage from '../pages/EditorPage';
 const App: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // const [isUpdateNoteAndDirList, setIsUpdateNoteAndDirList] =
-  const [isUpdateNoteAndDirList] = React.useState(false);
+  const [isUpdateNoteAndDirList, setIsUpdateNoteAndDirList] =
+    React.useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // const [noteList, setNotelist] = React.useState<NotePreview[]>([]);
   const [currentNote, setCurrentNote] = React.useState<Note>({});
-
-  // СТРАНИЦА СОЗДАНИЯ ЗАМЕТКИ
-
-  // const requestNote = async (id: number) => {
-  //   try {
-  //     const response = await api.notes.notesDetail(id);
-
-  //     console.log(response.data);
-
-  //     setCurrentNote(response.data);
-  //     // TODO: добавить link на страницу редактирования пустой заметки
-  //   } catch (error) {
-  //     console.log('Error in requestNote: ', error);
-  //   }
-  // };
-
-  // const handleCreateNote = async (event: React.MouseEvent) => {
-  //   event.preventDefault();
-  //   const note: Note = {
-  //     userId: 1,
-  //     parentDir: 0,
-  //   };
-
-  //   try {
-  //     const response = await api.notes.notesCreate(note);
-
-  //     console.log(response.data.noteId);
-
-  //     requestNote(response.data.noteId);
-  //     setIsUpdateNoteAndDirList(!isUpdateNoteAndDirList);
-  //   } catch (error) {
-  //     console.log('Error in handleCreateNote: ', error);
-  //   }
-  // };
 
   return (
     <>
@@ -68,15 +35,27 @@ const App: React.FC = () => {
                     path="/note/:id"
                     element={
                       <CustomHeader
+                        isFullHeader
                         currentNote={currentNote}
                         messageApi={messageApi}
                         setCurrentNote={setCurrentNote}
+                        isUpdateNoteAndDirList={isUpdateNoteAndDirList}
+                        setIsUpdateNoteAndDirList={setIsUpdateNoteAndDirList}
                       ></CustomHeader>
                     }
                   />
                   <Route
                     path="/*"
-                    element={<h1>Хедер для страниц списка папок</h1>}
+                    element={
+                      <CustomHeader
+                        isFullHeader={false}
+                        currentNote={currentNote}
+                        messageApi={messageApi}
+                        setCurrentNote={setCurrentNote}
+                        isUpdateNoteAndDirList={isUpdateNoteAndDirList}
+                        setIsUpdateNoteAndDirList={setIsUpdateNoteAndDirList}
+                      ></CustomHeader>
+                    }
                   />
                 </Routes>
                 <Layout>
@@ -103,6 +82,10 @@ const App: React.FC = () => {
                         path="/note/:id"
                         element={
                           <EditorPage
+                            isUpdateNoteAndDirList={isUpdateNoteAndDirList}
+                            setIsUpdateNoteAndDirList={
+                              setIsUpdateNoteAndDirList
+                            }
                             note={currentNote}
                             setNote={setCurrentNote}
                             contextHolder={contextHolder}
