@@ -2,6 +2,7 @@ import React from 'react';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import { message, Upload } from 'antd';
+import { api } from '../../api';
 
 const { Dragger } = Upload;
 
@@ -10,19 +11,27 @@ type Props = {
   isImage: boolean | null;
 };
 
+const requestUploadFile = async (file: File) => {
+  console.log('requestUploadFile');
+  const response = await api.recognizer.mixedCreate({ image: file });
+  console.log(response);
+};
+
 const props: UploadProps = {
   name: 'file',
   multiple: true,
-  action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
+  action: '',
+  // action: 'https://smartlectures.ru/recognizer/mixed',
   onChange(info) {
     const { status } = info.file;
     if (status !== 'uploading') {
-      console.log(info.file, info.fileList);
+      requestUploadFile(info.file.originFileObj);
+      console.log('uploading', info.file, info.fileList);
     }
     if (status === 'done') {
-      message.success(`${info.file.name} file uploaded successfully.`);
+      message.success(`done ${info.file.name} file uploaded successfully.`);
     } else if (status === 'error') {
-      message.error(`${info.file.name} file upload failed.`);
+      message.error(`error ${info.file.name} file upload failed.`);
     }
   },
   onDrop(e) {

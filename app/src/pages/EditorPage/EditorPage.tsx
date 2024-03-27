@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 
 import { getCodeString } from 'rehype-rewrite';
@@ -49,6 +49,7 @@ const EditorPage: React.FC<Props> = ({
 }) => {
   const { id: strNoteId } = useParams<string>();
   const currentNoteId = Number(strNoteId);
+  const formRef = useRef(null);
 
   const navigate = useNavigate();
   const [size] = useState<SizeType>('large');
@@ -147,6 +148,46 @@ const EditorPage: React.FC<Props> = ({
     setIsImageDragger(false);
   };
 
+  const requestUploadFile = async (event: React.ChangeEvent) => {
+    event.preventDefault();
+    console.log('requestUploadFile', event.target.files);
+    const response = await api.recognizer.mixedCreate({
+      images: event.target.files,
+    });
+    console.log(response);
+  };
+
+  async function sendFormData(formData) {
+    try {
+      const response = await fetch(
+        'https://smartlectures.ru/api/v1/recognizer/mixed',
+        {
+          method: 'POST',
+          body: formData,
+        },
+      );
+
+      console.log(response);
+
+      // if (!response.ok) {
+      //   throw new Error('Network response was not ok');
+      // }
+
+      // const data = await response.json();
+      // console.log(data);
+    } catch (error) {
+      console.error('There was a problem with your fetch operation:', error);
+    }
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    console.log(event);
+    const formData = new FormData();
+    formData.append('images', event.target.files[0]);
+    await sendFormData(formData);
+  };
+
   return (
     <div className="payload_list_container">
       {contextHolder}
@@ -191,6 +232,17 @@ const EditorPage: React.FC<Props> = ({
               </Button>
             </div>
             <div>
+              {/* <input type="file" onChange={requestUploadFile}></input> */}
+              <form ref={formRef}>
+                <input
+                  type="file"
+                  name="images"
+                  accept="image/*"
+                  required
+                  onChange={handleSubmit}
+                />
+                <button type="submit">Submit</button>
+              </form>
               <CustomDragger
                 isActive={isActiveDragger}
                 isImage={isImageDragger}

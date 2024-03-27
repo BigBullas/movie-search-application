@@ -27,6 +27,12 @@ export interface Dir {
    * @example 1337
    */
   userId?: number;
+  /**
+   * Числовой идентификатор родительской папки
+   * @format int32
+   * @example 1337
+   */
+  parentDir?: number;
   subdirs?: Dir[];
 }
 
@@ -416,6 +422,22 @@ export class Api<
      * No description
      *
      * @tags dirs
+     * @name DirsDetail
+     * @summary Получение папки по ID
+     * @request GET:/dirs/{dirId}
+     */
+    dirsDetail: (dirId: number, params: RequestParams = {}) =>
+      this.request<Dir, Error>({
+        path: `/dirs/${dirId}`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags dirs
      * @name DirsUpdate
      * @summary Обновление папки по ID
      * @request PUT:/dirs/{dirId}
@@ -482,6 +504,89 @@ export class Api<
         Error
       >({
         path: `/images/upload`,
+        method: 'POST',
+        body: data,
+        type: ContentType.FormData,
+        format: 'json',
+        ...params,
+      }),
+  };
+  recognizer = {
+    /**
+     * No description
+     *
+     * @tags recognizer
+     * @name FormulaCreate
+     * @request POST:/recognizer/formula
+     */
+    formulaCreate: (
+      data: {
+        /** @format binary */
+        image?: File;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          text?: string;
+        },
+        Error
+      >({
+        path: `/recognizer/formula`,
+        method: 'POST',
+        body: data,
+        type: ContentType.FormData,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags recognizer
+     * @name TextCreate
+     * @request POST:/recognizer/text
+     */
+    textCreate: (
+      data: {
+        images?: File[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          text?: string;
+        },
+        Error
+      >({
+        path: `/recognizer/text`,
+        method: 'POST',
+        body: data,
+        type: ContentType.FormData,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags recognizer
+     * @name MixedCreate
+     * @request POST:/recognizer/mixed
+     */
+    mixedCreate: (
+      data: {
+        images?: File[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          text?: string;
+        },
+        Error
+      >({
+        path: `/recognizer/mixed`,
         method: 'POST',
         body: data,
         type: ContentType.FormData,

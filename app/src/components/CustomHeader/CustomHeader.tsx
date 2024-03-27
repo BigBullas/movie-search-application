@@ -125,14 +125,14 @@ const CustomHeader: React.FC<Props> = ({
     <Header className={styles.headerStyle}>
       <div className={styles.headerLeft}>
         <div className={styles.burgerAndLogo}>
-          <div>
+          <div style={{ alignItems: 'center' }}>
             <MenuUnfoldOutlined style={{ fontSize: '20px' }} />
           </div>
           <div className={styles.logo} onClick={handleClickMainPage}>
             EasyTeX
           </div>
         </div>
-        <div>
+        <div style={{ alignItems: 'center' }}>
           <PlusCircleOutlined
             style={{ fontSize: '20px' }}
             onClick={handleClickCreateNewNote}
@@ -142,14 +142,14 @@ const CustomHeader: React.FC<Props> = ({
       {isFullHeader && (
         <div className={styles.headerRight}>
           <div className={styles.documentTitle}>
-            <div>
+            <div style={{ alignItems: 'center' }}>
               <Input
                 value={currentNoteTitle}
                 placeholder="Новый документ"
                 onChange={handleUpdateTitle}
               />
             </div>
-            <div>
+            <div style={{ alignItems: 'center' }}>
               <EditOutlined
                 style={{ fontSize: '20px' }}
                 onClick={handleClickUpdateTitle}

@@ -7,6 +7,8 @@ info:
 servers:
   - url: https://smartlectures.ru/api/v1
     description: Main server
+  - url: http://localhost:8080/api/v1
+    description: Localhost server
 paths:
   /notes:
     post:
@@ -94,9 +96,7 @@ paths:
       description: Обновление заметки.
       responses:
         '204':
-          description:
-            Ответ при успешном запросе возвращается объект заметки с запрошенным
-            идентификатором
+          description: Ответ при успешном запросе
         '404':
           description: Ответ при попытке обновления не существующей заметки
           content:
@@ -152,6 +152,36 @@ paths:
                 $ref: '#/components/schemas/DirCreationResponse'
       tags: [dirs]
   /dirs/{dirId}:
+    get:
+      summary: Получение папки по ID
+      parameters:
+        - in: path
+          name: dirId
+          schema:
+            type: integer
+          required: true
+          description: Числовой идентификатор папки
+      responses:
+        '200':
+          description: Ответ при успешном выполнении запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dir'
+        '404':
+          description: Ответ при ошибке на стороне сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Ответ при ошибке на стороне сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags: [dirs]
+
     put:
       summary: Обновление папки по ID
       parameters:
@@ -243,6 +273,96 @@ paths:
                   type: string
                   format: binary
       tags: [images]
+
+  /recognizer/formula:
+    post:
+      responses:
+        '200':
+          description: Ответ при успешном выполнении запроса
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+        '500':
+          description: Ответ при ошибке на стороне сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      tags: [recognizer]
+
+  /recognizer/text:
+    post:
+      responses:
+        '200':
+          description: Ответ при успешном выполнении запроса
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+        '500':
+          description: Ответ при ошибке на стороне сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      tags: [recognizer]
+  /recognizer/mixed:
+    post:
+      responses:
+        '200':
+          description: Ответ при успешном выполнении запроса
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+        '500':
+          description: Ответ при ошибке на стороне сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      tags: [recognizer]
 components:
   schemas:
     Dir:
@@ -263,6 +383,12 @@ components:
           type: number
           format: int32
           description: Числовой идентификатор создателя папки
+          example: 1337
+          x-isnullable: flase
+        parentDir:
+          type: number
+          format: int32
+          description: Числовой идентификатор родительской папки
           example: 1337
           x-isnullable: flase
         subdirs:
