@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import MDEditor from '@uiw/react-md-editor';
 
 import { getCodeString } from 'rehype-rewrite';
@@ -14,23 +14,6 @@ import { Menu, Dropdown } from 'antd';
 
 console.log(styles);
 
-const menu = (
-  <Menu
-    onClick={({ key }) => {
-      console.log('click the key: ', key);
-    }}
-    items={[
-      { label: 'Преобразовать фото текста', key: 'pasteText' },
-      { label: 'Преобразовать фото формулы', key: 'pasteMath' },
-      {
-        label: 'Добавить фото конспекта',
-        key: 'pasteMix',
-        onClick: () => console.log('pasteMix'),
-      },
-    ]}
-  ></Menu>
-);
-
 type Props = {
   note: Note;
   setNote: React.Dispatch<React.SetStateAction<Note>>;
@@ -43,6 +26,12 @@ type Props = {
 };
 
 const EditorPage: React.FC<Props> = ({ note, setNote, contextHolder }) => {
+  const inputForContextMenu = useRef<HTMLInputElement | null>(null);
+
+  const [noteText, setNoteText] = useState<string | undefined>(note.body);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [currentKeyContextMenu, setCurrentKeyContextMenu] = useState('');
+
   const currentHref = window.location.href;
   const hasNote = currentHref.includes('/note/');
   const hasCreateNote = currentHref.includes('/create_note');
@@ -59,8 +48,6 @@ const EditorPage: React.FC<Props> = ({ note, setNote, contextHolder }) => {
     }
   }
 
-  const [noteText, setNoteText] = useState<string | undefined>(note.body);
-
   useEffect(() => {
     if (currentNoteId > 0) {
       requestOnNote();
@@ -76,7 +63,7 @@ const EditorPage: React.FC<Props> = ({ note, setNote, contextHolder }) => {
       const response = await api.notes.notesDetail(currentNoteId);
       setNote(response.data);
 
-      console.log(note);
+      // console.log(note);
     } catch (error) {
       console.log('Error in requestOntNote: ', error);
     }
@@ -95,8 +82,79 @@ const EditorPage: React.FC<Props> = ({ note, setNote, contextHolder }) => {
 
   const handleContextMenuOnEditor = (event: React.MouseEvent) => {
     event.preventDefault();
-    console.log(event);
+    // @ts-ignore
+    setCursorPosition(event.target.selectionStart);
   };
+
+  const handleClickInContextMenu = (key: string) => {
+    if (key === 'pasteMix' || key === 'pasteText' || key === 'pasteMath') {
+      setCurrentKeyContextMenu(key);
+      inputForContextMenu.current?.click();
+    }
+    console.log('click the key: ', key);
+  };
+
+  async function sendFormData(formData: FormData) {
+    try {
+      console.log(currentKeyContextMenu);
+      const response = await fetch(
+        'https://smartlectures.ru/api/v1/recognizer/mixed',
+        {
+          method: 'POST',
+          body: formData,
+        },
+      );
+      const text = await response.json();
+      console.log(text.text);
+      let currentText = noteText;
+      if (cursorPosition == currentText?.length) {
+        currentText += text.text;
+      } else {
+        currentText =
+          currentText?.substring(0, cursorPosition) +
+          text.text +
+          currentText?.substring(cursorPosition, currentText.length);
+      }
+      setNoteText(currentText);
+      setNote((note: Note) => {
+        note.body = String(currentText);
+        return note;
+      });
+    } catch (error) {
+      console.error('There was a problem with your fetch operation:', error);
+    }
+  }
+
+  const handleChangeInputForContextMenu = async (event: React.ChangeEvent) => {
+    console.log(event);
+    const formData = new FormData();
+    // @ts-ignore
+    formData.append('images', event.target.files[0]);
+    await sendFormData(formData);
+  };
+
+  const menu = (
+    <Menu
+      onClick={({ key }) => {
+        handleClickInContextMenu(key);
+      }}
+      items={[
+        { label: 'Вставить фото', key: 'addImage' },
+        {
+          label: 'Преобразовать',
+          key: 'paste',
+          children: [
+            { label: 'Фото текста', key: 'pasteText' },
+            { label: 'Фото формулы', key: 'pasteMath' },
+          ],
+        },
+        {
+          label: 'Добавить фото конспекта',
+          key: 'pasteMix',
+        },
+      ]}
+    ></Menu>
+  );
 
   return (
     <div className="payload_list_container">
@@ -166,6 +224,12 @@ const EditorPage: React.FC<Props> = ({ note, setNote, contextHolder }) => {
               }}
             />
           </Dropdown>
+          <input
+            type="file"
+            ref={inputForContextMenu}
+            style={{ display: 'none' }}
+            onChange={handleChangeInputForContextMenu}
+          ></input>
         </div>
       </>
     </div>

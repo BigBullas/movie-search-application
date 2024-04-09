@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { FileTextOutlined, FolderOutlined } from '@ant-design/icons';
 import type { MenuProps, MenuTheme } from 'antd';
-import { Menu } from 'antd';
+import { Dropdown, Menu } from 'antd';
 import { api } from '../../api';
 import { NotePreview, Dir, Note } from '../../api/Api';
 
-import styles from './CustomMenu.module.scss';
+// import styles from './CustomMenu.module.scss';
 import { useNavigate } from 'react-router-dom';
-console.log(styles);
 
 const createMenuStructure = (
   dirMap: Map<number, MenuItem>,
@@ -84,7 +83,7 @@ const reverseFolderTraversal = (dir: Dir, globalNoteList: NotePreview[]) => {
           cur_dir = peekDir.subdirs[i - 1];
         } else {
           // иначе (у узла на предыдущей итерации все потомки обработаны)
-          console.log(peekDir); // ...обработка данных узла... (вывод в консоль)
+          // console.log(peekDir); // ...обработка данных узла... (вывод в консоль)
           createMenuStructure(dirMap, peekDir, globalNoteList);
 
           lastDirVisited = memory.pop(); // убираем узел из памяти (стека) и запоминаем его
@@ -92,7 +91,7 @@ const reverseFolderTraversal = (dir: Dir, globalNoteList: NotePreview[]) => {
 
         // если узел на предыдущей итерации был листом
       } else {
-        console.log(peekDir); // ...обработка данных узла... (вывод в консоль)
+        // console.log(peekDir); // ...обработка данных узла... (вывод в консоль)
         createMenuStructure(dirMap, peekDir, globalNoteList);
 
         lastDirVisited = memory.pop(); // убираем узел из памяти (стека) и запоминаем его
@@ -147,6 +146,9 @@ const CustomMenu: React.FC<Props> = ({
   const [dirList, setDirList] = useState<Dir[]>([]);
   const [navbar, setNavbar] = useState<MenuItem[]>();
 
+  const [idWithContextMenu, setIdWithContextMenu] = useState('');
+  console.log(idWithContextMenu);
+
   useEffect(() => {
     setCurrentNoteId(String(currentNote.noteId));
     setCurrentDirId(`d${currentNote.parentDir}`);
@@ -193,27 +195,15 @@ const CustomMenu: React.FC<Props> = ({
   }, [isUpdate]);
 
   useEffect(() => {
-    console.log('createNavbar: ', noteList, dirList, navbar);
+    // console.log('createNavbar: ', noteList, dirList, navbar);
     createNavbar();
   }, [noteList, dirList]);
-
-  // useEffect(() => {
-  //   console.log('noteList: ', noteList);
-  // }, [noteList]);
-
-  // useEffect(() => {
-  //   console.log('dirList: ', dirList);
-  // }, [dirList]);
-
-  // useEffect(() => {
-  //   console.log('navbar: ', navbar);
-  // }, [navbar]);
 
   const requestForNotesOverview = async () => {
     try {
       const response = await api.notes.overviewList();
 
-      console.log('response.data.notes: ', response.data.notes);
+      // console.log('response.data.notes: ', response.data.notes);
 
       if (response.data.notes) {
         setNoteList(response.data.notes);
@@ -227,7 +217,7 @@ const CustomMenu: React.FC<Props> = ({
     try {
       const response = await api.dirs.overviewList();
 
-      console.log('response.data.dirs: ', response.data.dirs);
+      // console.log('response.data.dirs: ', response.data.dirs);
 
       if (response.data.dirs) {
         setDirList(response.data.dirs);
@@ -243,7 +233,7 @@ const CustomMenu: React.FC<Props> = ({
   // };
 
   const onClick: MenuProps['onClick'] = (e) => {
-    console.log('click ', e);
+    // console.log('click ', e);
     if (e.key.startsWith('d')) {
       setCurrentDirId(e.key);
       navigate(`/dir/${e.key.slice(1)}`);
@@ -254,6 +244,48 @@ const CustomMenu: React.FC<Props> = ({
     }
   };
 
+  const handleContextMenuOnNavbar = (event: React.MouseEvent) => {
+    event.preventDefault();
+    // @ts-ignore
+    console.log(
+      event,
+      event.currentTarget,
+      // @ts-ignore
+      event.target.parentNode,
+      // @ts-ignore
+      event.target.parentNode.attributes[3].value,
+    );
+    // @ts-ignore
+    const strId: string = event.target.parentNode.attributes[3].value;
+    const index = strId.lastIndexOf('-') + 1;
+    console.log(strId.substring(index));
+    setIdWithContextMenu(strId.substring(index));
+  };
+
+  const menu = (
+    <Menu
+      onClick={({ key }) => {
+        console.log(key);
+        // handleClickInContextMenu(key);
+      }}
+      items={[
+        { label: 'Создать заметку', key: 'createNote' },
+        {
+          label: 'Создать папку',
+          key: 'createFolder',
+        },
+        {
+          label: 'Изменить имя папки',
+          key: 'editFolder',
+        },
+        {
+          label: 'Удалить папку',
+          key: 'deleteFolder',
+        },
+      ]}
+    ></Menu>
+  );
+
   return (
     <>
       {/* <Switch
@@ -262,15 +294,18 @@ const CustomMenu: React.FC<Props> = ({
         checkedChildren="Dark"
         unCheckedChildren="Light"
       /> */}
-      <Menu
-        theme={theme}
-        onClick={onClick}
-        style={{ textAlign: 'left' }}
-        defaultOpenKeys={[currentDirId]}
-        selectedKeys={[currentNoteId]}
-        mode="inline"
-        items={navbar}
-      />
+      <Dropdown overlay={menu} trigger={['contextMenu']}>
+        <Menu
+          theme={theme}
+          onClick={onClick}
+          onContextMenu={handleContextMenuOnNavbar}
+          style={{ textAlign: 'left' }}
+          defaultOpenKeys={[currentDirId]}
+          selectedKeys={[currentNoteId]}
+          mode="inline"
+          items={navbar}
+        />
+      </Dropdown>
     </>
   );
 };
