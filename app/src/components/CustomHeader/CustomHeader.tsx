@@ -43,6 +43,22 @@ const CustomHeader: React.FC<Props> = ({
     setCurrentNoteTitle(currentNote.name);
   }, [currentNote]);
 
+  const requestNote = async (id: number) => {
+    try {
+      const response = await api.notes.notesDetail(id);
+
+      console.log(response.data);
+
+      setCurrentNote(response.data);
+      setIsUpdateNoteAndDirList(!isUpdateNoteAndDirList);
+
+      navigate(`/note/${id}`);
+      // TODO: добавить link на страницу редактирования пустой заметки
+    } catch (error) {
+      console.log('Error in requestNote: ', error);
+    }
+  };
+
   const requestUpdateNote = async () => {
     try {
       if (currentNote.noteId) {
@@ -55,9 +71,25 @@ const CustomHeader: React.FC<Props> = ({
           type: 'success',
           content: 'Конспект успешно обновлён',
         });
+      } else {
+        if (currentNote.noteId === 0) {
+          try {
+            const response = await api.notes.notesCreate(currentNote);
+
+            console.log(response.data.noteId);
+
+            requestNote(response.data.noteId);
+            messageApi.open({
+              type: 'success',
+              content: 'Конспект успешно обновлён',
+            });
+          } catch (error) {
+            console.log('Error in requestUpdateNote: ', error);
+          }
+        }
       }
     } catch (error) {
-      console.log('Error in handleUpdateNote: ', error);
+      console.log('Error in requestUpdateNote: ', error);
     }
   };
 
@@ -102,7 +134,7 @@ const CustomHeader: React.FC<Props> = ({
     event.preventDefault();
     setCurrentNote({});
     setCurrentNoteTitle(undefined);
-    navigate('/note/0');
+    navigate('/create_note');
   };
 
   const handleClickMainPage = (event: React.MouseEvent) => {

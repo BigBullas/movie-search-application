@@ -11,6 +11,7 @@ import Search from 'antd/es/input/Search';
 import CustomHeader from '../components/CustomHeader';
 import { Note } from '../api/Api';
 import EditorPage from '../pages/EditorPage';
+import CreationPage from '../pages/CreationPage';
 
 const App: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -33,6 +34,19 @@ const App: React.FC = () => {
                 <Routes>
                   <Route
                     path="/note/:id"
+                    element={
+                      <CustomHeader
+                        isFullHeader
+                        currentNote={currentNote}
+                        messageApi={messageApi}
+                        setCurrentNote={setCurrentNote}
+                        isUpdateNoteAndDirList={isUpdateNoteAndDirList}
+                        setIsUpdateNoteAndDirList={setIsUpdateNoteAndDirList}
+                      ></CustomHeader>
+                    }
+                  />
+                  <Route
+                    path="/create_note"
                     element={
                       <CustomHeader
                         isFullHeader
@@ -76,8 +90,32 @@ const App: React.FC = () => {
                     <Routes>
                       <Route
                         path="/"
-                        element={<h1>Страница списка папок и файлов</h1>}
+                        element={
+                          <EditorPage
+                            isUpdateNoteAndDirList={isUpdateNoteAndDirList}
+                            setIsUpdateNoteAndDirList={
+                              setIsUpdateNoteAndDirList
+                            }
+                            note={currentNote}
+                            setNote={setCurrentNote}
+                            contextHolder={contextHolder}
+                          ></EditorPage>
+                        }
                       />
+                      <Route
+                        path="/create_note/"
+                        element={
+                          <CreationPage
+                            isUpdateNoteAndDirList={isUpdateNoteAndDirList}
+                            setIsUpdateNoteAndDirList={
+                              setIsUpdateNoteAndDirList
+                            }
+                            note={currentNote}
+                            setNote={setCurrentNote}
+                            contextHolder={contextHolder}
+                          ></CreationPage>
+                        }
+                      ></Route>
                       <Route
                         path="/note/:id"
                         element={
