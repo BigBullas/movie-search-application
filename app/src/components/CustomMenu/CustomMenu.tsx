@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { FileTextOutlined, FolderOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  FileAddOutlined,
+  FileTextOutlined,
+  FolderAddOutlined,
+  FolderOutlined,
+} from '@ant-design/icons';
 import type { MenuProps, MenuTheme } from 'antd';
 import { Dropdown, Menu } from 'antd';
 import { api } from '../../api';
 import { NotePreview, Dir, Note } from '../../api/Api';
 
-// import styles from './CustomMenu.module.scss';
+import styles from './CustomMenu.module.scss';
 import { useNavigate } from 'react-router-dom';
 
 const createMenuStructure = (
@@ -105,10 +112,18 @@ const reverseFolderTraversal = (dir: Dir, globalNoteList: NotePreview[]) => {
   return null;
 };
 
+// const test = (labelToView: React.ReactNode, key?: React.Key | null) => {
+//   console.log(key, labelToView);
+//   if (key === 5) {
+//     return <input placeholder="Введите имя" value={String(labelToView)} />;
+//   }
+//   return <>{labelToView}</>;
+// };
+
 type MenuItem = Required<MenuProps>['items'][number];
 
 function getItem(
-  label: React.ReactNode,
+  labelToView: React.ReactNode,
   key?: React.Key | null,
   icon?: React.ReactNode,
   children?: MenuItem[],
@@ -118,19 +133,21 @@ function getItem(
     key,
     icon,
     children,
-    label,
+    label: labelToView,
     type,
   } as MenuItem;
 }
 
 type Props = {
   isUpdate: boolean;
+  setIsUpdate: React.Dispatch<React.SetStateAction<boolean>>;
   currentNote: Note;
   setCurrentNote: React.Dispatch<React.SetStateAction<Note>>;
 };
 
 const CustomMenu: React.FC<Props> = ({
   isUpdate,
+  setIsUpdate,
   currentNote,
   setCurrentNote,
 }) => {
@@ -147,7 +164,6 @@ const CustomMenu: React.FC<Props> = ({
   const [navbar, setNavbar] = useState<MenuItem[]>();
 
   const [idWithContextMenu, setIdWithContextMenu] = useState('');
-  console.log(idWithContextMenu);
 
   useEffect(() => {
     setCurrentNoteId(String(currentNote.noteId));
@@ -246,41 +262,133 @@ const CustomMenu: React.FC<Props> = ({
 
   const handleContextMenuOnNavbar = (event: React.MouseEvent) => {
     event.preventDefault();
-    // @ts-ignore
-    console.log(
-      event,
-      event.currentTarget,
+    // console.log(event.target);
+    const strId: string =
       // @ts-ignore
-      event.target.parentNode,
-      // @ts-ignore
-      event.target.parentNode.attributes[3].value,
-    );
-    // @ts-ignore
-    const strId: string = event.target.parentNode.attributes[3].value;
-    const index = strId.lastIndexOf('-') + 1;
-    console.log(strId.substring(index));
-    setIdWithContextMenu(strId.substring(index));
+      event.target.attributes.getNamedItem('data-menu-id').value;
+    if (strId.includes('-')) {
+      const index = strId.lastIndexOf('-') + 1;
+      setIdWithContextMenu(strId.substring(index));
+    } else {
+      setIdWithContextMenu('d0');
+    }
+  };
+
+  const redirectToNewNote = (id: number, newNote: Note) => {
+    setCurrentNote(newNote);
+    setIsUpdate(!isUpdate);
+
+    navigate(`/note/${id}`);
+  };
+
+  // повторяется в 2 местах, можно вынести
+  const requestNote = async (id: number): Promise<Note | undefined> => {
+    try {
+      const response = await api.notes.notesDetail(id);
+
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.log('Error in requestNote: ', error);
+      return undefined;
+    }
+  };
+
+  // повторяется в 2 местах, можно вынести
+  const createNoteOrFolder = async (isNote: boolean) => {
+    let newNoteOrFolder: Note = {};
+    if (idWithContextMenu.includes('d')) {
+      newNoteOrFolder = {
+        userId: 1,
+        parentDir: Number(idWithContextMenu.substring(1)),
+      };
+    } else {
+      const clickedNote = await requestNote(Number(idWithContextMenu));
+      newNoteOrFolder = {
+        userId: 1,
+        parentDir: clickedNote?.parentDir,
+      };
+    }
+
+    try {
+      if (isNote) {
+        const response = await api.notes.notesCreate(newNoteOrFolder);
+
+        console.log(response.data.noteId);
+
+        const receivedNote = await requestNote(response.data.noteId);
+        if (receivedNote) {
+          redirectToNewNote(response.data.noteId, receivedNote);
+        }
+      } else {
+        const response = await api.dirs.dirsCreate(newNoteOrFolder);
+
+        console.log(response.data.dirId);
+
+        setIsUpdate(!isUpdate);
+      }
+    } catch (error) {
+      console.log('Error in handleCreateNote: ', error);
+    }
+  };
+
+  const deleteFolder = async () => {
+    let folderId = 0;
+    if (idWithContextMenu.includes('d')) {
+      folderId = Number(idWithContextMenu.substring(1));
+    } else {
+      const clickedNote = await requestNote(Number(idWithContextMenu));
+      folderId = clickedNote?.parentDir ?? 0;
+    }
+
+    try {
+      const response = await api.dirs.dirsDelete(folderId);
+
+      console.log(response.status);
+
+      setIsUpdate(!isUpdate);
+    } catch (error) {
+      console.log('Error in handleCreateNote: ', error);
+    }
+  };
+
+  const handleClickInContextMenu = async (key: string) => {
+    console.log(key, idWithContextMenu);
+    if (key === 'createNote') {
+      await createNoteOrFolder(true);
+    } else if (key === 'createFolder') {
+      await createNoteOrFolder(false);
+    } else if (key === 'deleteFolder') {
+      await deleteFolder();
+    }
   };
 
   const menu = (
     <Menu
       onClick={({ key }) => {
-        console.log(key);
-        // handleClickInContextMenu(key);
+        handleClickInContextMenu(key);
       }}
       items={[
-        { label: 'Создать заметку', key: 'createNote' },
+        {
+          label: 'Создать заметку',
+          key: 'createNote',
+          icon: <FileAddOutlined />,
+        },
         {
           label: 'Создать папку',
           key: 'createFolder',
+          icon: <FolderAddOutlined />,
         },
         {
-          label: 'Изменить имя папки',
-          key: 'editFolder',
+          label: 'Переименовать',
+          key: 'rename',
+          icon: <EditOutlined />,
         },
         {
           label: 'Удалить папку',
           key: 'deleteFolder',
+          danger: true,
+          icon: <DeleteOutlined />,
         },
       ]}
     ></Menu>
@@ -304,6 +412,7 @@ const CustomMenu: React.FC<Props> = ({
           selectedKeys={[currentNoteId]}
           mode="inline"
           items={navbar}
+          className={styles.menu}
         />
       </Dropdown>
     </>

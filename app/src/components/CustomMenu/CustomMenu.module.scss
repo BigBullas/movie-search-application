@@ -1,4 +1,16 @@
-.test001 {
-  color: blue;
-  font-size: large;
+.menu {
+  height: 100%;
+  li {
+    div {
+      span,
+      i {
+        pointer-events: none;
+      }
+      // font-size: xx-large !important;
+    }
+    span {
+      pointer-events: none;
+      // font-size: xx-large !important;
+    }
+  }
 }

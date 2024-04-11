@@ -84,6 +84,7 @@ const App: React.FC = () => {
                       currentNote={currentNote}
                       setCurrentNote={setCurrentNote}
                       isUpdate={isUpdateNoteAndDirList}
+                      setIsUpdate={setIsUpdateNoteAndDirList}
                     ></CustomMenu>
                   </Sider>
                   <Content style={contentStyle}>
