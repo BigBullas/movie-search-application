@@ -9,6 +9,39 @@
  * ---------------------------------------------------------------
  */
 
+export interface GetSnippetsResponse {
+  snippets: Snippet[];
+}
+
+export interface Snippet {
+  /**
+   * @format int32
+   * @example 1
+   */
+  snippetId: number;
+  /**
+   * Название сниппета
+   * @example "integral"
+   */
+  name: string;
+  /**
+   * Описание сниппета
+   * @example "Определенный интеграл"
+   */
+  description: string;
+  /**
+   * Тело сниппета
+   * @example "```$$\alpha$$```"
+   */
+  body: string;
+  /**
+   * ID владельца сниппета
+   * @format int32
+   * @example 1
+   */
+  userId: number;
+}
+
 export interface NoteSearchResponse {
   items: NoteSearchItem[];
 }
@@ -640,6 +673,23 @@ export class Api<
         method: 'POST',
         body: data,
         type: ContentType.FormData,
+        format: 'json',
+        ...params,
+      }),
+  };
+  snippets = {
+    /**
+     * @description Получение списка сниппетов
+     *
+     * @tags snippets
+     * @name SnippetsList
+     * @summary Получение списка сниппетов
+     * @request GET:/snippets
+     */
+    snippetsList: (params: RequestParams = {}) =>
+      this.request<GetSnippetsResponse, Error>({
+        path: `/snippets`,
+        method: 'GET',
         format: 'json',
         ...params,
       }),

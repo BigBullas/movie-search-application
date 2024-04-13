@@ -1,5 +1,5 @@
 // import classes from "./App.module.scss";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Layout, Flex, message } from 'antd';
 import { Resizable } from 're-resizable';
@@ -10,10 +10,11 @@ const { Sider, Content } = Layout;
 import CustomMenu from '../components/CustomMenu';
 import Search from 'antd/es/input/Search';
 import CustomHeader from '../components/CustomHeader';
-import { Note } from '../api/Api';
+import { Note, Snippet } from '../api/Api';
 import EditorPage from '../pages/EditorPage';
 import CreationPage from '../pages/CreationPage';
 import CustomFindContainer from '../components/CustomFindContainer';
+import { api } from '../api';
 
 const App: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -24,6 +25,7 @@ const App: React.FC = () => {
   // const [noteList, setNotelist] = React.useState<NotePreview[]>([]);
   const [currentNote, setCurrentNote] = useState<Note>({});
   const [findValue, setFindValue] = useState<string>('');
+  const [snippets, setSnippets] = useState<Snippet[]>([]);
 
   const handleChangeFindValue = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -34,6 +36,16 @@ const App: React.FC = () => {
   const handleEventFindValue = (newValue: string) => {
     setFindValue(newValue);
   };
+
+  const requestSnippets = async () => {
+    const response = await api.snippets.snippetsList();
+    setSnippets(response.data.snippets);
+  };
+
+  useEffect(() => {
+    requestSnippets();
+  }, []);
+
   return (
     <>
       <Routes>
@@ -128,6 +140,8 @@ const App: React.FC = () => {
                             }
                             note={currentNote}
                             setNote={setCurrentNote}
+                            snippets={snippets}
+                            setSnippets={setSnippets}
                             contextHolder={contextHolder}
                           ></EditorPage>
                         }
@@ -156,6 +170,8 @@ const App: React.FC = () => {
                             }
                             note={currentNote}
                             setNote={setCurrentNote}
+                            snippets={snippets}
+                            setSnippets={setSnippets}
                             contextHolder={contextHolder}
                           ></EditorPage>
                         }
