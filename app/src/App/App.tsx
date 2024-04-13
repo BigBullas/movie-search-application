@@ -1,7 +1,8 @@
 // import classes from "./App.module.scss";
-import React from 'react';
+import React, { useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Layout, Flex, message } from 'antd';
+import { Resizable } from 're-resizable';
 // import { api } from './../api';
 
 const { Sider, Content } = Layout;
@@ -12,6 +13,7 @@ import CustomHeader from '../components/CustomHeader';
 import { Note } from '../api/Api';
 import EditorPage from '../pages/EditorPage';
 import CreationPage from '../pages/CreationPage';
+import CustomFindContainer from '../components/CustomFindContainer';
 
 const App: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -20,8 +22,18 @@ const App: React.FC = () => {
     React.useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   // const [noteList, setNotelist] = React.useState<NotePreview[]>([]);
-  const [currentNote, setCurrentNote] = React.useState<Note>({});
+  const [currentNote, setCurrentNote] = useState<Note>({});
+  const [findValue, setFindValue] = useState<string>('');
 
+  const handleChangeFindValue = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setFindValue(event.target.value);
+  };
+
+  const handleEventFindValue = (newValue: string) => {
+    setFindValue(newValue);
+  };
   return (
     <>
       <Routes>
@@ -73,20 +85,37 @@ const App: React.FC = () => {
                   />
                 </Routes>
                 <Layout>
-                  <Sider style={siderStyle} width={'260px'}>
-                    <Search
-                      placeholder="Поиск"
-                      allowClear
-                      onSearch={() => {}}
-                      style={{ width: '80%', margin: '1em 0' }}
-                    />
-                    <CustomMenu
-                      currentNote={currentNote}
-                      setCurrentNote={setCurrentNote}
-                      isUpdate={isUpdateNoteAndDirList}
-                      setIsUpdate={setIsUpdateNoteAndDirList}
-                    ></CustomMenu>
-                  </Sider>
+                  <Resizable
+                    className="asdfasdf"
+                    defaultSize={{
+                      width: '260px',
+                      height: '100%',
+                    }}
+                  >
+                    <Sider style={siderStyle} width={'100%'}>
+                      <Search
+                        placeholder="Поиск"
+                        allowClear
+                        onChange={handleChangeFindValue}
+                        onSearch={handleEventFindValue}
+                        value={findValue}
+                        style={{ width: '80%', margin: '1em 0' }}
+                      />
+                      {!findValue ? (
+                        <CustomMenu
+                          currentNote={currentNote}
+                          setCurrentNote={setCurrentNote}
+                          isUpdate={isUpdateNoteAndDirList}
+                          setIsUpdate={setIsUpdateNoteAndDirList}
+                        ></CustomMenu>
+                      ) : (
+                        <CustomFindContainer
+                          findValue={findValue}
+                        ></CustomFindContainer>
+                      )}
+                    </Sider>
+                  </Resizable>
+
                   <Content style={contentStyle}>
                     <Routes>
                       <Route
@@ -153,49 +182,6 @@ const App: React.FC = () => {
 
 export default App;
 
-{
-  /* <Routes>
-<Route path="/home" element={<HomePage />} />
-<Route path="/*" element={
-  <Layout style={layoutStyle}>
-    <CustomHeader />
-    <Layout>
-      <Sider style={siderStyle} width={'260px'}>
-        <Search placeholder="Поиск" allowClear onSearch={() => {}} style={{ width: '80%', margin: '1em 0' }} />
-        <CustomMenu />
-      </Sider>
-      <Content style={contentStyle}>
-        <Routes>
-         <Route path="/" element={<h1>Страница списка папок и файлов</h1>} />
-         <Route path="/note/:id" element={<EditorPage />} />
-        </Routes>
-      </Content>
-    </Layout>
-  </Layout>
-} />
-</Routes> */
-}
-
-/*    <BrowserRouter>
-      <Header />
-      <ContainerUnderHeader desc={ desc } path={ path } draftID={ draftID }/>
-
-      <Routes>
-        <Route path="/" element={<PayloadsPage changeBreadcrump = {changeBreadcrump} payloads={ payloads }
-         loading = { loading } getPayloadList={ getPayloadList } draftID = { draftID } setDraftID = { setDraftID }/>} />
-        <Route path="/edit_payloads/" element = {<EditPayloadListPage changeBreadcrump={changeBreadcrump}/> } />
-        <Route path="/edit_payload/:id" element = {<SinglePayloadPage changeBreadcrump = {changeBreadcrump} isEdit = {true}/>} />
-        <Route path="/payload/:id" element = {<SinglePayloadPage changeBreadcrump = {changeBreadcrump} isEdit = {false}/>} />
-
-        <Route path="/rocket_flights" element = { <FlightsPage changeBreadcrump={changeBreadcrump}/> }/>
-        <Route path="/rocket_flight/:id" element = { <SingleFlightPage changeBreadcrump={changeBreadcrump} draftId={draftID} setDraftId={ setDraftID }/> }/>
-
-        <Route path="/auth" element = { <AuthPage changeBreadcrump = {changeBreadcrump}/> }/>
-        <Route path="/reg" element = { <RegPage  changeBreadcrump = {changeBreadcrump}/> }/>
-        <Route path="/profile" element = { <ProfilePage changeBreadcrump={changeBreadcrump} draftID = { draftID } setDraftID = { setDraftID } />}/>
-      </Routes>
-    </BrowserRouter> */
-
 const contentStyle: React.CSSProperties = {
   textAlign: 'center',
   minHeight: 120,
@@ -208,14 +194,8 @@ const contentStyle: React.CSSProperties = {
 const siderStyle: React.CSSProperties = {
   height: '100%',
   textAlign: 'center',
-  // lineHeight: '100vh',
   color: '#black',
   backgroundColor: '#FFFFFF',
-
-  // borderRight: '2px solid #9C9C9C',
-  // height: '10vh',
-  // display: 'flex',
-  // padding: '0px 5px',
 };
 
 const layoutStyle = {

@@ -9,6 +9,33 @@
  * ---------------------------------------------------------------
  */
 
+export interface NoteSearchResponse {
+  items: NoteSearchItem[];
+}
+
+export interface NoteSearchItem {
+  /**
+   * @format int32
+   * @example 1
+   */
+  noteId: number;
+  /**
+   * Название заметки
+   * @example "TestName"
+   */
+  name: string;
+  bodyHighlight: string[];
+  nameHighlight: string[];
+}
+
+export interface SearchRequest {
+  /**
+   * Поисковый запрос
+   * @example "Новая заметка"
+   */
+  query: string;
+}
+
 export interface Dir {
   /**
    * Числовой идентификатор папки
@@ -33,6 +60,11 @@ export interface Dir {
    * @example 1337
    */
   parentDir?: number;
+  /**
+   * Ссылка на URL иконки
+   * @example ""
+   */
+  iconUrl?: string;
   subdirs?: Dir[];
 }
 
@@ -40,7 +72,7 @@ export interface Note {
   /**
    * ID заметки
    * @format int32
-   * @example 1337
+   * @example 1
    */
   noteId?: number;
   /**
@@ -68,13 +100,13 @@ export interface Note {
   /**
    * ID папки, которой принадлежит заметка
    * @format int32
-   * @example 1337
+   * @example 1
    */
   parentDir?: number;
   /**
    * ID пользователя, которому принадлежит заметка
    * @format int32
-   * @example 1337
+   * @example 1
    */
   userId?: number;
 }
@@ -396,6 +428,24 @@ export class Api<
       this.request<void, Error>({
         path: `/notes/${noteId}`,
         method: 'DELETE',
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags notes
+     * @name SearchCreate
+     * @summary Поиск заметок
+     * @request POST:/notes/search
+     */
+    searchCreate: (data: SearchRequest, params: RequestParams = {}) =>
+      this.request<NoteSearchResponse, Error>({
+        path: `/notes/search`,
+        method: 'POST',
+        body: data,
+        type: ContentType.Json,
+        format: 'json',
         ...params,
       }),
   };
