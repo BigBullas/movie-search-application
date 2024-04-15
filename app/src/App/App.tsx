@@ -23,7 +23,7 @@ const App: React.FC = () => {
           }
         />
         <Route
-          path="/home"
+          path="/film/:id"
           element={
             <>
               <h1>

@@ -4,6 +4,7 @@ import { Card, Pagination } from 'antd';
 const { Meta } = Card;
 import { api } from '../../api';
 import { MovieDtoV14 } from '../../api/Api';
+import { Link } from 'react-router-dom';
 
 // import styles from './MoviesPage.module.scss';
 
@@ -34,40 +35,37 @@ const MoviesPage: React.FC = () => {
 
   return (
     <div>
-      <div>
+      <div
+        style={{
+          display: 'flex',
+          gap: '1em',
+          flexWrap: 'wrap',
+          padding: '1em',
+        }}
+      >
         {moviesList &&
           moviesList.map((item) => {
             return (
-              <Card
-                key={item.id}
-                hoverable
-                style={{ width: 240 }}
-                cover={
-                  <img
-                    alt={item.alternativeName ?? item.name ?? 'someMoviesImg'}
-                    src={item.poster?.url ?? ''}
+              <Link to={`/film/${item.id}`} key={item.id}>
+                <Card
+                  key={item.id}
+                  hoverable
+                  style={{ width: 240, cursor: 'pointer' }}
+                  cover={
+                    <img
+                      alt={item.alternativeName ?? item.name ?? 'someMoviesImg'}
+                      src={item.poster?.url ?? ''}
+                    />
+                  }
+                >
+                  <Meta
+                    title={item.name}
+                    description={`Рейтинг: ${String(item.rating?.kp)} Ограничение: ${String(item.ageRating)}`}
                   />
-                }
-              >
-                <Meta
-                  title={item.name}
-                  description={`Рейтинг: ${String(item.rating?.kp)} Ограничение: ${String(item.ageRating)}`}
-                />
-              </Card>
+                </Card>
+              </Link>
             );
           })}
-        <Card
-          hoverable
-          style={{ width: 240 }}
-          cover={
-            <img
-              alt="example"
-              src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png"
-            />
-          }
-        >
-          <Meta title="Europe Street beat" description="www.instagram.com" />
-        </Card>
       </div>
       <div>
         <Pagination
