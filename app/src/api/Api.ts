@@ -793,6 +793,9 @@ export interface ListDocsResponseDtoV14 {
   pages: number;
 }
 
+// @ts-ignore
+const xApiKey = process.env.REACT_APP_X_API_KEY;
+
 import type {
   AxiosInstance,
   AxiosRequestConfig,
@@ -957,6 +960,7 @@ export class HttpClient<SecurityDataType = unknown> {
         ...(type && type !== ContentType.FormData
           ? { 'Content-Type': type }
           : {}),
+        'X-API-kEY': xApiKey,
       },
       params: query,
       responseType: responseFormat,
